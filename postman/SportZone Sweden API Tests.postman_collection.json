@@ -1,0 +1,353 @@
+{
+  "info": {
+    "_postman_id": "cbceb725-00c5-4e82-97e4-09b8661d5727",
+    "name": "SportZone Sweden API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "6398545"
+  },
+  "item": [
+    {
+      "name": "TC01 - API Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response is valid JSON\", function () {\r",
+              "    pm.response.to.be.json;\r",
+              "});\r",
+              "\r",
+              "const body = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Health status is OK\", function () {\r",
+              "    pm.expect(body.status).to.eql(\"ok\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response contains status field\", function () {\r",
+              "    pm.expect(body).to.have.property(\"status\");\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "health"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC02 - Get All Matches",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "pm.test(\"Get All Matches returns 200\", () => {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "const matches = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Matches response is a non-empty array\", () => {\r",
+              "    pm.expect(matches).to.be.an(\"array\").that.is.not.empty;\r",
+              "});\r",
+              "\r",
+              "// Get the ID from the first match returned by the API.\r",
+              "const matchId = matches[0].id;\r",
+              "\r",
+              "// Save it for subsequent requests.\r",
+              "pm.environment.set(\"matchId\", String(matchId));\r",
+              "\r",
+              "console.log(\"Saved matchId:\", matchId);\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/matches",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "matches"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC03 - Get Match By ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "const match = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Correct match ID is returned\", function () {\r",
+              "    pm.expect(match.id).to.eql(101);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Home team is Stockholm FC\", function () {\r",
+              "    pm.expect(match.homeTeam).to.eql(\"Stockholm FC\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Away team is Malmo United\", function () {\r",
+              "    pm.expect(match.awayTeam).to.eql(\"Malmo United\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Home score is 2\", function () {\r",
+              "    pm.expect(match.homeScore).to.eql(2);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Away score is 1\", function () {\r",
+              "    pm.expect(match.awayScore).to.eql(1);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Finished match has valid scores\", function () {\r",
+              "    pm.expect(match.status).to.eql(\"finished\");\r",
+              "    pm.expect(match.homeScore).to.be.a(\"number\");\r",
+              "    pm.expect(match.awayScore).to.be.a(\"number\");\r",
+              "    pm.expect(match.homeScore).to.be.at.least(0);\r",
+              "    pm.expect(match.awayScore).to.be.at.least(0);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/matches/{{matchId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "matches",
+            "{{matchId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC04 - Match Not Found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "pm.test(\"Unknown match returns 404\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response is valid JSON\", function () {\r",
+              "    pm.response.to.be.json;\r",
+              "});\r",
+              "\r",
+              "const body = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Correct error message is returned\", function () {\r",
+              "    pm.expect(body.error).to.eql(\"Match not found\");\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/matches/999",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "matches",
+            "999"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC05 — Get Teams",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "const teams = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Teams response is an array\", function () {\r",
+              "    pm.expect(teams).to.be.an(\"array\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Four sample teams are returned\", function () {\r",
+              "    pm.expect(teams).to.have.lengthOf(4);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Every team has a numeric ID and a name\", function () {\r",
+              "    teams.forEach(function (team) {\r",
+              "        pm.expect(team.id).to.be.a(\"number\");\r",
+              "        pm.expect(team.name).to.be.a(\"string\");\r",
+              "        pm.expect(team.name.trim().length).to.be.above(0);\r",
+              "    });\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Team IDs are unique\", function () {\r",
+              "    const ids = teams.map(team => team.id);\r",
+              "\r",
+              "    pm.expect(new Set(ids).size).to.eql(ids.length);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/teams",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "teams"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "TC06 — Get League Standings",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "\r",
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "const standings = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Standings response is an array\", function () {\r",
+              "    pm.expect(standings).to.be.an(\"array\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Four teams are listed\", function () {\r",
+              "    pm.expect(standings).to.have.lengthOf(4);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Standings contain valid values\", function () {\r",
+              "    standings.forEach(function (team) {\r",
+              "        pm.expect(team.position).to.be.a(\"number\");\r",
+              "        pm.expect(team.team).to.be.a(\"string\");\r",
+              "        pm.expect(team.played).to.be.a(\"number\");\r",
+              "        pm.expect(team.points).to.be.a(\"number\");\r",
+              "\r",
+              "        pm.expect(team.position).to.be.above(0);\r",
+              "        pm.expect(team.played).to.be.at.least(0);\r",
+              "        pm.expect(team.points).to.be.at.least(0);\r",
+              "    });\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Positions are in ascending order\", function () {\r",
+              "    for (let i = 1; i < standings.length; i++) {\r",
+              "        pm.expect(standings[i].position)\r",
+              "            .to.be.above(standings[i - 1].position);\r",
+              "    }\r",
+              "});\r",
+              "\r",
+              "pm.test(\"First team is Stockholm FC\", function () {\r",
+              "    pm.expect(standings[0].team).to.eql(\"Stockholm FC\");\r",
+              "    pm.expect(standings[0].position).to.eql(1);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/standings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "standings"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

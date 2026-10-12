@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>SportZone Sweden</title>
+
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+      <h1>SportZone Sweden</h1>
+      <p>Your football match centre</p>
+
+      <nav>
+        <a href="#matches">Matches</a>
+        <a href="#standings">Standings</a>
+        <a href="#teams">Teams</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <p class="eyebrow">SWEDISH FOOTBALL</p>
+      <h2>Follow the game</h2>
+      <p>
+        Explore fixtures, match results and league standings.
+      </p>
+    </section>
+
+    <section id="matches">
+      <h2>Football Matches</h2>
+
+      <input
+        id="teamSearch"
+        type="search"
+        placeholder="Search for a team..."
+        aria-label="Search for a team"
+      >
+
+      <p id="loadingMessage">Loading matches...</p>
+      <p id="errorMessage" role="alert" hidden></p>
+
+      <div id="matchesList" class="matches-grid"></div>
+    </section>
+
+    <section id="standings">
+      <h2>League Standings</h2>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Position</th>
+              <th>Team</th>
+              <th>Played</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+
+          <tbody id="standingsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="teams">
+      <h2>About Our Teams</h2>
+      <p>
+        Explore fictional Swedish football teams and their matches.
+        This project uses sample data for testing and demonstration.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>SportZone Sweden — QA Automation Project</p>
+    </div>
+  </footer>
+</body>
+</html>
