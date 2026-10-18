@@ -7,347 +7,851 @@
   },
   "item": [
     {
-      "name": "TC01 - API Health Check",
-      "event": [
+      "name": "01 - Health",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "\r",
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Response is valid JSON\", function () {\r",
-              "    pm.response.to.be.json;\r",
-              "});\r",
-              "\r",
-              "const body = pm.response.json();\r",
-              "\r",
-              "pm.test(\"Health status is OK\", function () {\r",
-              "    pm.expect(body.status).to.eql(\"ok\");\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Response contains status field\", function () {\r",
-              "    pm.expect(body).to.have.property(\"status\");\r",
-              "});\r",
-              ""
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/health",
-          "host": [
-            "{{baseUrl}}"
+          "name": "TC01 - API Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response is valid JSON\", function () {\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const body = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Health status is OK\", function () {\r",
+                  "    pm.expect(body.status).to.eql(\"ok\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Response contains status field\", function () {\r",
+                  "    pm.expect(body).to.have.property(\"status\");\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set(\r",
+                  "    \"testStartedAt\",\r",
+                  "    new Date().toISOString()\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
           ],
-          "path": [
-            "api",
-            "health"
-          ]
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "TC02 - Get All Matches",
-      "event": [
+      "name": "02 - Matches - GET",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "\r",
-              "pm.test(\"Get All Matches returns 200\", () => {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});\r",
-              "\r",
-              "const matches = pm.response.json();\r",
-              "\r",
-              "pm.test(\"Matches response is a non-empty array\", () => {\r",
-              "    pm.expect(matches).to.be.an(\"array\").that.is.not.empty;\r",
-              "});\r",
-              "\r",
-              "// Get the ID from the first match returned by the API.\r",
-              "const matchId = matches[0].id;\r",
-              "\r",
-              "// Save it for subsequent requests.\r",
-              "pm.environment.set(\"matchId\", String(matchId));\r",
-              "\r",
-              "console.log(\"Saved matchId:\", matchId);\r",
-              ""
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/matches",
-          "host": [
-            "{{baseUrl}}"
+          "name": "TC02 - Get All Matches",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get All Matches returns HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const matches = pm.response.json();",
+                  "",
+                  "    pm.test(\"Response contains an array of matches\", function () {",
+                  "        pm.expect(matches).to.be.an(\"array\");",
+                  "    });",
+                  "",
+                  "    pm.test(\"Each match has an ID\", function () {",
+                  "        matches.forEach(function (match) {",
+                  "            pm.expect(match.id).to.exist;",
+                  "        });",
+                  "    });",
+                  "",
+                  "    if (matches.length > 0) {",
+                  "        // Select an ID that actually exists in the response.",
+                  "        const selectedMatch = matches[0];",
+                  "",
+                  "        pm.environment.set(",
+                  "            \"matchId\",",
+                  "            String(selectedMatch.id)",
+                  "        );",
+                  "",
+                  "        console.log(\"Saved matchId:\", selectedMatch.id);",
+                  "    } else {",
+                  "        throw new Error(\"No matches returned by the API.\");",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.unset(\"matchId\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
           ],
-          "path": [
-            "api",
-            "matches"
-          ]
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/matches",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "matches"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC03 - Get Match By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get Match By ID returns HTTP 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    const match = pm.response.json();",
+                  "    const requestedMatchId = pm.environment.get(\"matchId\") || pm.collectionVariables.get(\"matchId\");",
+                  "",
+                  "    pm.test(\"Returned ID matches the requested ID\", function () {",
+                  "        pm.expect(Number(match.id)).to.eql(Number(requestedMatchId));",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const requestedMatchId = pm.environment.get(\"matchId\") || pm.collectionVariables.get(\"matchId\");",
+                  "",
+                  "if (!requestedMatchId) {",
+                  "    throw new Error(\"matchId is missing. Run TC02 first.\");",
+                  "}",
+                  "",
+                  "console.log(\"Requested match ID:\", requestedMatchId);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/matches/{{matchId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "matches",
+                "{{matchId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC04 - Match Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Nonexistent match returns HTTP 404\", () => {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Error response contains a message\", () => {\r",
+                  "    const response = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(response.error).to.be.a(\"string\").and.not.empty;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const baseUrl = pm.environment.get(\"baseUrl\");\r",
+                  "\r",
+                  "pm.sendRequest(\r",
+                  "    {\r",
+                  "        url: `${baseUrl}/api/matches`,\r",
+                  "        method: \"GET\"\r",
+                  "    },\r",
+                  "    (error, response) => {\r",
+                  "        if (error || response.code !== 200) {\r",
+                  "            throw new Error(\r",
+                  "                \"Unable to retrieve matches for the negative test.\"\r",
+                  "            );\r",
+                  "        }\r",
+                  "\r",
+                  "        const matches = response.json();\r",
+                  "        const ids = matches.map(match => Number(match.id));\r",
+                  "\r",
+                  "        const candidate = ids.length\r",
+                  "            ? Math.max(...ids) + 1\r",
+                  "            : 1;\r",
+                  "\r",
+                  "        pm.collectionVariables.set(\r",
+                  "            \"nonexistentMatchId\",\r",
+                  "            String(candidate)\r",
+                  "        );\r",
+                  "    }\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/matches/999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "matches",
+                "999"
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "TC03 - Get Match By ID",
-      "event": [
+      "name": "03 - Matches - POST",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "\r",
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});\r",
-              "\r",
-              "const match = pm.response.json();\r",
-              "\r",
-              "pm.test(\"Correct match ID is returned\", function () {\r",
-              "    pm.expect(match.id).to.eql(101);\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Home team is Stockholm FC\", function () {\r",
-              "    pm.expect(match.homeTeam).to.eql(\"Stockholm FC\");\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Away team is Malmo United\", function () {\r",
-              "    pm.expect(match.awayTeam).to.eql(\"Malmo United\");\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Home score is 2\", function () {\r",
-              "    pm.expect(match.homeScore).to.eql(2);\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Away score is 1\", function () {\r",
-              "    pm.expect(match.awayScore).to.eql(1);\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Finished match has valid scores\", function () {\r",
-              "    pm.expect(match.status).to.eql(\"finished\");\r",
-              "    pm.expect(match.homeScore).to.be.a(\"number\");\r",
-              "    pm.expect(match.awayScore).to.be.a(\"number\");\r",
-              "    pm.expect(match.homeScore).to.be.at.least(0);\r",
-              "    pm.expect(match.awayScore).to.be.at.least(0);\r",
-              "});\r",
-              ""
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/matches/{{matchId}}",
-          "host": [
-            "{{baseUrl}}"
+          "name": "TC05 — Create Match",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const uniqueId = pm.variables.replaceIn(\"{{$guid}}\");\r",
+                  "\r",
+                  "pm.collectionVariables.set(\"newHomeTeam\", \"Home Team \" + uniqueId);\r",
+                  "pm.collectionVariables.set(\"newAwayTeam\", \"Away Team \" + uniqueId);\r",
+                  "\r",
+                  "const futureDate = new Date();\r",
+                  "futureDate.setDate(futureDate.getDate() + 7);\r",
+                  "\r",
+                  "pm.collectionVariables.set(\r",
+                  "    \"newMatchDate\",\r",
+                  "    futureDate.toISOString().split(\"T\")[0]\r",
+                  ");\r",
+                  "\r",
+                  "pm.collectionVariables.unset(\"createdMatchId\");\r",
+                  "pm.collectionVariables.unset(\"deletedMatchId\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "",
+                  "    pm.test(\"Response contains a generated match ID\", function () {",
+                  "        pm.expect(response.id).to.exist;",
+                  "        pm.expect(response.id).to.be.a(\"number\");",
+                  "    });",
+                  "",
+                  "    // Save the ID in the active environment",
+                  "    pm.environment.set(\"createdMatchId\", response.id);",
+                  "",
+                  "    console.log(\"Created match ID:\", response.id);",
+                  "} else {",
+                  "    console.log(\"POST request failed:\", pm.response.text());",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
           ],
-          "path": [
-            "api",
-            "matches",
-            "{{matchId}}"
-          ]
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"homeTeam\": \"{{newHomeTeam}}\",\r\n  \"awayTeam\": \"{{newAwayTeam}}\",\r\n  \"homeScore\": null,\r\n  \"awayScore\": null,\r\n  \"date\": \"{{newMatchDate}}\",\r\n  \"status\": \"scheduled\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/matches",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "matches"
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "TC04 - Match Not Found",
-      "event": [
+      "name": "04 - Matches - PUT",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "\r",
-              "pm.test(\"Unknown match returns 404\", function () {\r",
-              "    pm.response.to.have.status(404);\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Response is valid JSON\", function () {\r",
-              "    pm.response.to.be.json;\r",
-              "});\r",
-              "\r",
-              "const body = pm.response.json();\r",
-              "\r",
-              "pm.test(\"Correct error message is returned\", function () {\r",
-              "    pm.expect(body.error).to.eql(\"Match not found\");\r",
-              "});\r",
-              ""
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:3000/api/matches/999",
-          "protocol": "http",
-          "host": [
-            "localhost"
+          "name": "TC06 — Update Created Match",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Read the ID from the active environment: SportZone Local\r",
+                  "const matchId = pm.environment.get(\"createdMatchId\");\r",
+                  "\r",
+                  "if (!matchId) {\r",
+                  "    throw new Error(\r",
+                  "        \"createdMatchId is missing from the active environment. Run TC05 first.\"\r",
+                  "    );\r",
+                  "}\r",
+                  "\r",
+                  "console.log(\"Updating match ID:\", matchId);\r",
+                  "\r",
+                  "// Generate unique team names\r",
+                  "const runId = pm.variables.replaceIn(\"{{$guid}}\")\r",
+                  "    .replace(/-/g, \"\")\r",
+                  "    .slice(0, 8);\r",
+                  "\r",
+                  "const homeTeam = `UpdatedHome_${runId}`;\r",
+                  "const awayTeam = `UpdatedAway_${runId}`;\r",
+                  "\r",
+                  "pm.collectionVariables.set(\"updatedHomeTeam\", homeTeam);\r",
+                  "pm.collectionVariables.set(\"updatedAwayTeam\", awayTeam);\r",
+                  "\r",
+                  "// Reuse the date generated by TC05\r",
+                  "const date = pm.collectionVariables.get(\"newMatchDate\");\r",
+                  "\r",
+                  "if (!date) {\r",
+                  "    throw new Error(\r",
+                  "        \"newMatchDate is missing. Check the TC05 Pre-request script.\"\r",
+                  "    );\r",
+                  "}\r",
+                  "\r",
+                  "pm.collectionVariables.set(\"updatedMatchDate\", date);\r",
+                  "\r",
+                  "// Generate scores\r",
+                  "const homeScore = Math.floor(Math.random() * 6);\r",
+                  "const awayScore = Math.floor(Math.random() * 6);\r",
+                  "\r",
+                  "pm.collectionVariables.set(\"updatedHomeScore\", String(homeScore));\r",
+                  "pm.collectionVariables.set(\"updatedAwayScore\", String(awayScore));\r",
+                  "\r",
+                  "console.log(\"Updated home team:\", homeTeam);\r",
+                  "console.log(\"Updated away team:\", awayTeam);\r",
+                  "console.log(\"Updated scores:\", homeScore, \"-\", awayScore);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Update Match returns HTTP 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 200) {\r",
+                  "    const match = pm.response.json();\r",
+                  "\r",
+                  "    // Read IDs and test data from their correct variable scopes.\r",
+                  "    const createdMatchId = pm.environment.get(\"createdMatchId\");\r",
+                  "    const updatedHomeTeam = pm.collectionVariables.get(\"updatedHomeTeam\");\r",
+                  "    const updatedAwayTeam = pm.collectionVariables.get(\"updatedAwayTeam\");\r",
+                  "    const updatedHomeScore = pm.collectionVariables.get(\"updatedHomeScore\");\r",
+                  "    const updatedAwayScore = pm.collectionVariables.get(\"updatedAwayScore\");\r",
+                  "\r",
+                  "    pm.test(\"Updated ID remains unchanged\", function () {\r",
+                  "        pm.expect(createdMatchId).to.exist;\r",
+                  "        pm.expect(Number(match.id)).to.eql(Number(createdMatchId));\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Updated team names match the submitted data\", function () {\r",
+                  "        pm.expect(match.homeTeam).to.eql(updatedHomeTeam);\r",
+                  "        pm.expect(match.awayTeam).to.eql(updatedAwayTeam);\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Updated scores match the submitted scores\", function () {\r",
+                  "        pm.expect(Number(match.homeScore)).to.eql(Number(updatedHomeScore));\r",
+                  "        pm.expect(Number(match.awayScore)).to.eql(Number(updatedAwayScore));\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Updated match is finished\", function () {\r",
+                  "        pm.expect(match.status).to.eql(\"finished\");\r",
+                  "    });\r",
+                  "} else {\r",
+                  "    console.log(\"Update request failed:\", pm.response.text());\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
           ],
-          "port": "3000",
-          "path": [
-            "api",
-            "matches",
-            "999"
-          ]
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"homeTeam\": \"{{updatedHomeTeam}}\",\r\n  \"awayTeam\": \"{{updatedAwayTeam}}\",\r\n  \"homeScore\": {{updatedHomeScore}},\r\n  \"awayScore\": {{updatedAwayScore}},\r\n  \"date\": \"{{updatedMatchDate}}\",\r\n  \"status\": \"finished\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/matches/{{createdMatchId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "matches",
+                "{{createdMatchId}}"
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "TC05 — Get Teams",
-      "event": [
+      "name": "05 - Matches - DELETE",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "\r",
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});\r",
-              "\r",
-              "const teams = pm.response.json();\r",
-              "\r",
-              "pm.test(\"Teams response is an array\", function () {\r",
-              "    pm.expect(teams).to.be.an(\"array\");\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Four sample teams are returned\", function () {\r",
-              "    pm.expect(teams).to.have.lengthOf(4);\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Every team has a numeric ID and a name\", function () {\r",
-              "    teams.forEach(function (team) {\r",
-              "        pm.expect(team.id).to.be.a(\"number\");\r",
-              "        pm.expect(team.name).to.be.a(\"string\");\r",
-              "        pm.expect(team.name.trim().length).to.be.above(0);\r",
-              "    });\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Team IDs are unique\", function () {\r",
-              "    const ids = teams.map(team => team.id);\r",
-              "\r",
-              "    pm.expect(new Set(ids).size).to.eql(ids.length);\r",
-              "});\r",
-              ""
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:3000/api/teams",
-          "protocol": "http",
-          "host": [
-            "localhost"
+          "name": "TC07 — Delete Created Match",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const matchId = pm.environment.get(\"createdMatchId\");\r",
+                  "\r",
+                  "if (!matchId) {\r",
+                  "    throw new Error(\r",
+                  "        \"createdMatchId is missing from the SportZone Local environment. Run TC05 first.\"\r",
+                  "    );\r",
+                  "}\r",
+                  "\r",
+                  "console.log(\"Deleting match ID:\", matchId);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Delete Match returns HTTP 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 200) {\r",
+                  "    const response = pm.response.json();\r",
+                  "    const createdMatchId = pm.environment.get(\"createdMatchId\");\r",
+                  "\r",
+                  "    pm.test(\"Deleted response identifies the correct match\", function () {\r",
+                  "        pm.expect(Number(response.id)).to.eql(Number(createdMatchId));\r",
+                  "    });\r",
+                  "\r",
+                  "    pm.test(\"Deletion response contains a message\", function () {\r",
+                  "        pm.expect(response.message).to.be.a(\"string\").and.not.empty;\r",
+                  "    });\r",
+                  "\r",
+                  "    // Save the deleted ID in the SportZone Local environment.\r",
+                  "    pm.environment.set(\"deletedMatchId\", createdMatchId);\r",
+                  "\r",
+                  "    console.log(\"Deleted match ID saved:\", createdMatchId);\r",
+                  "} else {\r",
+                  "    console.error(\"Delete failed:\", pm.response.text());\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
           ],
-          "port": "3000",
-          "path": [
-            "api",
-            "teams"
-          ]
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/matches/{{createdMatchId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "matches",
+                "{{createdMatchId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC08 — Verify Deleted Match",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const deletedMatchId = pm.environment.get(\"deletedMatchId\");\r",
+                  "\r",
+                  "if (!deletedMatchId) {\r",
+                  "    throw new Error(\r",
+                  "        \"deletedMatchId is missing from the SportZone Local environment. Run TC07 first.\"\r",
+                  "    );\r",
+                  "}\r",
+                  "\r",
+                  "console.log(\"Verifying deleted match ID:\", deletedMatchId);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Deleted match returns HTTP 404\", function () {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 404) {\r",
+                  "    const response = pm.response.json();\r",
+                  "\r",
+                  "    pm.test(\"Error message confirms match was not found\", function () {\r",
+                  "        pm.expect(response.error).to.eql(\"Match not found\");\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/matches/{{deletedMatchId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "matches",
+                "{{deletedMatchId}}"
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "TC06 — Get League Standings",
-      "event": [
+      "name": "06 - Teams",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "\r",
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});\r",
-              "\r",
-              "const standings = pm.response.json();\r",
-              "\r",
-              "pm.test(\"Standings response is an array\", function () {\r",
-              "    pm.expect(standings).to.be.an(\"array\");\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Four teams are listed\", function () {\r",
-              "    pm.expect(standings).to.have.lengthOf(4);\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Standings contain valid values\", function () {\r",
-              "    standings.forEach(function (team) {\r",
-              "        pm.expect(team.position).to.be.a(\"number\");\r",
-              "        pm.expect(team.team).to.be.a(\"string\");\r",
-              "        pm.expect(team.played).to.be.a(\"number\");\r",
-              "        pm.expect(team.points).to.be.a(\"number\");\r",
-              "\r",
-              "        pm.expect(team.position).to.be.above(0);\r",
-              "        pm.expect(team.played).to.be.at.least(0);\r",
-              "        pm.expect(team.points).to.be.at.least(0);\r",
-              "    });\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Positions are in ascending order\", function () {\r",
-              "    for (let i = 1; i < standings.length; i++) {\r",
-              "        pm.expect(standings[i].position)\r",
-              "            .to.be.above(standings[i - 1].position);\r",
-              "    }\r",
-              "});\r",
-              "\r",
-              "pm.test(\"First team is Stockholm FC\", function () {\r",
-              "    pm.expect(standings[0].team).to.eql(\"Stockholm FC\");\r",
-              "    pm.expect(standings[0].position).to.eql(1);\r",
-              "});\r",
-              ""
-            ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/standings",
-          "host": [
-            "{{baseUrl}}"
+          "name": "TC09 — Get Teams",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get Teams returns HTTP 200\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "const teams = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Teams response is an array\", () => {\r",
+                  "    pm.expect(teams).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Each team has a valid ID and name\", () => {\r",
+                  "    teams.forEach(team => {\r",
+                  "        pm.expect(team.id).to.be.a(\"number\");\r",
+                  "        pm.expect(Number.isInteger(team.id)).to.eql(true);\r",
+                  "\r",
+                  "        pm.expect(team.name).to.be.a(\"string\").and.not.empty;\r",
+                  "    });\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Team IDs are unique\", () => {\r",
+                  "    const ids = teams.map(team => team.id);\r",
+                  "\r",
+                  "    pm.expect(new Set(ids).size).to.eql(ids.length);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set(\r",
+                  "    \"teamsRequestStartedAt\",\r",
+                  "    new Date().toISOString()\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
           ],
-          "path": [
-            "api",
-            "standings"
-          ]
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/teams",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "teams"
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
+    },
+    {
+      "name": "07 - Standings",
+      "item": [
+        {
+          "name": "TC10 — Get League Standings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Get Standings returns HTTP 200\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "const standings = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Standings response is an array\", () => {\r",
+                  "    pm.expect(standings).to.be.an(\"array\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Each row contains valid fields\", () => {\r",
+                  "    standings.forEach(row => {\r",
+                  "        pm.expect(row.position).to.be.a(\"number\");\r",
+                  "        pm.expect(row.played).to.be.a(\"number\");\r",
+                  "        pm.expect(row.points).to.be.a(\"number\");\r",
+                  "\r",
+                  "        pm.expect(row.position).to.be.above(0);\r",
+                  "        pm.expect(row.played).to.be.at.least(0);\r",
+                  "        pm.expect(row.points).to.be.at.least(0);\r",
+                  "    });\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Standings positions are ordered\", () => {\r",
+                  "    for (let i = 1; i < standings.length; i++) {\r",
+                  "        pm.expect(standings[i].position).to.be.at.least(\r",
+                  "            standings[i - 1].position\r",
+                  "        );\r",
+                  "    }\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set(\r",
+                  "    \"standingsRequestStartedAt\",\r",
+                  "    new Date().toISOString()\r",
+                  ");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/standings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "standings"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "testStartedAt",
+      "value": ""
+    },
+    {
+      "key": "matchId",
+      "value": ""
+    },
+    {
+      "key": "nonexistentMatchId",
+      "value": ""
+    },
+    {
+      "key": "newHomeTeam",
+      "value": ""
+    },
+    {
+      "key": "newAwayTeam",
+      "value": ""
+    },
+    {
+      "key": "newMatchDate",
+      "value": ""
+    },
+    {
+      "key": "updatedMatchDate",
+      "value": ""
+    },
+    {
+      "key": "updatedHomeScore",
+      "value": ""
+    },
+    {
+      "key": "updatedAwayScore",
+      "value": ""
+    },
+    {
+      "key": "teamsRequestStartedAt",
+      "value": ""
+    },
+    {
+      "key": "standingsRequestStartedAt",
+      "value": ""
+    },
+    {
+      "key": "updatedHomeTeam",
+      "value": ""
+    },
+    {
+      "key": "updatedAwayTeam",
+      "value": ""
     }
   ]
 }
